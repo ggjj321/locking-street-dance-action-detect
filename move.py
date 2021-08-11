@@ -21,7 +21,7 @@ def errorcal(lmList):
 
     shoulderDistance = np.linalg.norm(leftSide - rightSide)
 
-    print(0.08 * shoulderDistance + 36.4, shoulderDistance)
+    # print(0.08 * shoulderDistance + 36.4, shoulderDistance)
     return 0.08 * shoulderDistance + 36.4
     # actually measure linear equation
 
@@ -53,64 +53,49 @@ class fundamental():
 class twirl(fundamental):
     def __init__(self, rl):
         super().__init__()
-        self.moveList = []
+        self.moveList = [self.HandBesideWaist, self.HandShoulderElbow,
+                         self.MidProcess, self.HandOnShoulder, self.MidProcess,
+                         self.HandShoulderElbow
+                         ]
+        self.moveStep = 0
         self.rl = rl
-
-    def MidProcess(self, lmList):
+        self.name = 'twirl'
+    def MidProcess(self, lmList, notuse):
         # twril's mid process
         shoulder = lmList[11 + self.rl][2] - 150  # follow the error
         if aboveJudge(lmList[19 + self.rl][2] - shoulder):
             return True
         return False
 
-    def HandOnShoulder(self, lmList):
+    def HandOnShoulder(self, lmList, notuse):
         # hand on the shoulder
         shoulder = lmList[11 + self.rl][2] - 100  # follow the error
         if aboveJudge(lmList[19 + self.rl][2] - shoulder):
             return True
         return False
 
+    def setZero(self):
+        self.moveStep = 0
+
     def judge(self, lmList):
-        if self.HandBesideWaist(lmList, self.rl):
-            self.moveList = [1]
-            # cv2.putText(image, "1", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-            #             10, (255, 0, 0), 25)
-        if self.HandShoulderElbow(lmList, self.rl):
-            if 2 not in self.moveList:
-                self.moveList.append(2)
-            # if 3 in self.moveList:
-            #     cv2.putText(image, "6", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-            #                 10, (255, 0, 0), 25)
-            # else:
-            #     cv2.putText(image, "2", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-            #                 10, (255, 0, 0), 25)
-        if self.MidProcess(lmList):
-            if 3 not in self.moveList:
-                self.moveList.append(3)
-            # cv2.putText(image, "3", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-            #             10, (255, 0, 0), 25)
-            if 4 in self.moveList:
-                self.moveList.append(5)
-                # cv2.putText(image, "5", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-                #             10, (255, 0, 0), 25)
-        if 3 in self.moveList and self.HandOnShoulder(lmList) and 5 not in self.moveList:
-            if 4 not in self.moveList:
-                self.moveList.append(4)
-            # cv2.putText(image, "4", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-            #             10, (255, 0, 0), 25)
-        for i in range(1, 6):
-            if i not in self.moveList:
-                return False
-        self.moveList = []
-        return True
+        rl = self.rl
+        if self.moveList[self.moveStep](lmList, rl):
+            self.moveStep += 1
+        if self.moveStep == 6:
+            return True
+        return False
 
 
 class punch(fundamental):
     def __init__(self, rl):
         super().__init__()
-        self.moveList = []
+        self.moveList = [self.HandBesideWaist, self.HandShoulderElbow,
+                         self.ShoulderElbowHand, self.HandShoulderElbow
+                         ]
+        self.moveStep = 0
         self.rl = rl
-    def ShoulderElbowHand(self, lmList):
+        self.name = 'punch'
+    def ShoulderElbowHand(self, lmList, notuse):
         # shoulder,elbow and hand become a line
         pos = lmList[13 + self.rl][2] - 50
         if absJudge(lmList[19 + self.rl][2] - pos) and \
@@ -118,33 +103,15 @@ class punch(fundamental):
             if not self.HandShoulderElbow(lmList, self.rl):
                 return True
         return False
-
+    def setZero(self):
+        self.moveStep = 0
     def judge(self, lmList):
-        if self.HandBesideWaist(lmList, self.rl):
-            self.moveList = [1]
-            cv2.putText(image, "1", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-                        10, (255, 0, 0), 25)
-        if self.HandShoulderElbow(lmList, self.rl):
-            if 2 not in self.moveList:
-                self.moveList.append(2)
-            if 3 in self.moveList:
-                cv2.putText(image, "4", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-                            10, (255, 0, 0), 25)
-                if 4 not in self.moveList:
-                    self.moveList.append(4)
-            else:
-                cv2.putText(image, "2", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-                            10, (255, 0, 0), 25)
-        if self.ShoulderElbowHand(lmList):
-            if 2 not in self.moveList:
-                self.moveList.append(3)
-            cv2.putText(image, "3", (45, 375), cv2.FONT_HERSHEY_PLAIN,
-                        10, (255, 0, 0), 25)
-        for i in range(1, 5):
-            if i not in self.moveList:
-                return False
-        self.moveList = []
-        return True
+        rl = self.rl
+        if self.moveList[self.moveStep](lmList, rl):
+            self.moveStep += 1
+        if self.moveStep == 4:
+            return True
+        return False
 
 
 class queue():
@@ -157,12 +124,14 @@ class queue():
         if len(self.qu) >= 9:
             self.qu.pop(0)
 
-def putText(Action ,pos, image):
+
+def putText(Action, pos, image):
     wordInterval = 0
     for move in Action:
         cv2.putText(image, move, (80 + pos, 200 + wordInterval), cv2.FONT_HERSHEY_PLAIN,
                     4, (255, 0, 0), 5)
         wordInterval += 70
+
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -181,6 +150,9 @@ Righttwirl = twirl(0)
 Lefttwirl = twirl(1)
 RightPunch = punch(0)
 LeftPunch = punch(1)
+
+RightSideObj = [Righttwirl, RightPunch]
+LeftSideObj = [Lefttwirl, LeftPunch]
 
 RightSideAction = queue()
 LeftSideAction = queue()
@@ -225,16 +197,16 @@ with mp_pose.Pose(
 
             error = errorcal(lmList)
 
-            print(RightPunch.moveList)
-
-            if Righttwirl.judge(lmList):
-                RightSideAction.add("twirl")
-            if Lefttwirl.judge(lmList):
-                LeftSideAction.add("twirl")
-            if RightPunch.judge(lmList):
-                RightSideAction.add("punch")
-            if LeftPunch.judge(lmList):
-                LeftSideAction.add("punch")
+            for raction in RightSideObj:
+                if raction.judge(lmList):
+                    RightSideAction.add(raction.name)
+                    for zeroAction in RightSideObj:
+                        zeroAction.setZero()
+            for laction in LeftSideObj:
+                if laction.judge(lmList):
+                    LeftSideAction.add(laction.name)
+                    for zeroAction in LeftSideObj:
+                        zeroAction.setZero()
 
             putText(RightSideAction.qu, 920, image)
             putText(LeftSideAction.qu, 0, image)
