@@ -25,6 +25,17 @@ def angle_between(v1, v2):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+
+def angleca(vertexA, mid, vertexB):
+    vectorA = np.array([vertexA[1] - mid[1],
+                               vertexA[2] - mid[2]])
+    vectorB = np.array([vertexB[1] - mid[1],
+                           vertexB[2] - mid[2]])
+
+    angle = angle_between(vectorA, vectorB) / np.pi * 180
+    return angle
+
+
 def errorcal(lmList):
     # use distance of two shoulders to estimate the error
     leftSide = np.array([lmList[12][1], lmList[12][2]])
@@ -32,7 +43,7 @@ def errorcal(lmList):
 
     shoulderDistance = np.linalg.norm(leftSide - rightSide)
 
-    return 0.08 * shoulderDistance + 36.4
+    return (0.08 * shoulderDistance + 36.4) * 1.35
     # actually measure linear equation
 
 
@@ -40,7 +51,7 @@ def putText(Action, pos, image):
     wordInterval = 0
     for move in Action:
         cv2.putText(image, move, (80 + pos, 100 + wordInterval),
-                    cv2.FONT_HERSHEY_PLAIN,4, (255, 0, 0), 5)
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 5)
         wordInterval += 70
 
 
@@ -118,12 +129,8 @@ class punch(fundamental):
         pos = lmList[13 + self.rl][2] - 50
         if absJudge(lmList[19 + self.rl][2] - pos) and \
                 absJudge(pos - lmList[11 + self.rl][2]):
-            ShoulderCector = np.array([lmList[11 + self.rl][1] - lmList[13 + self.rl][1],
-                                      lmList[11 + self.rl][2] - lmList[13 + self.rl][2]])
-            HandVector = np.array([lmList[19 + self.rl][1] - lmList[13 + self.rl][1],
-                                      lmList[19 + self.rl][2] - lmList[13 + self.rl][2]])
-            angle = angle_between(ShoulderCector, HandVector) / np.pi * 180
-            if 155 <= angle <= 180:
+            angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
+            if 170 <= angle <= 180:
                 return True
         return False
 
@@ -145,13 +152,10 @@ class muscleMan(fundamental):
         self.moveStep = 0
 
     def handAboveVertical(self, lmList, notuse):
-        ShoulderCector = np.array([lmList[11 + self.rl][1] - lmList[13 + self.rl][1],
-                                   lmList[11 + self.rl][2] - lmList[13 + self.rl][2]])
-        HandVector = np.array([lmList[19 + self.rl][1] - lmList[13 + self.rl][1],
-                               lmList[19 + self.rl][2] - lmList[13 + self.rl][2]])
-        angle = angle_between(ShoulderCector, HandVector) / np.pi * 180
-        print(angle)
-        if 80 <= angle <= 100:
+        angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
+        if 85 <= angle <= 95 and aboveJudge(lmList[13 + self.rl][1] -
+                                           lmList[15 + self.rl][1]) and \
+                lmList[13 + self.rl][2] > lmList[15 + self.rl][2]:
             return True
 
     def judge(self, lmList):
@@ -159,6 +163,30 @@ class muscleMan(fundamental):
         if self.moveList[self.moveStep](lmList, rl):
             self.moveStep += 1
         if self.moveStep == 2:
+            return True
+        return False
+
+
+class lock(fundamental):
+    def __init__(self, rl):
+        super().__init__()
+        self.moveList = [self.HandBesideWaist, self.lockPose, self.HandShoulderElbow]
+        self.rl = rl
+        self.name = 'lock'
+        self.moveStep = 0
+
+    def lockPose(self, lmList, notuse):
+        angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
+        print(angle)
+        if 140 <= angle <= 160 and absJudge(lmList[15 + self.rl][2] - lmList[13 + self.rl][2]):
+            return True
+        return False
+
+    def judge(self, lmList):
+        rl = self.rl
+        if self.moveList[self.moveStep](lmList, rl):
+            self.moveStep += 1
+        if self.moveStep == 3:
             return True
         return False
 
@@ -192,9 +220,11 @@ RightPunch = punch(0)
 LeftPunch = punch(1)
 RightMman = muscleMan(0)
 LeftMnan = muscleMan(1)
+Rightlock = lock(0)
+Leftlock = lock(1)
 
-RightSideObj = [Righttwirl, RightPunch, RightMman]
-LeftSideObj = [Lefttwirl, LeftPunch, LeftMnan]
+RightSideObj = [Righttwirl, RightPunch, RightMman, Rightlock]
+LeftSideObj = [Lefttwirl, LeftPunch, LeftMnan, Leftlock]
 
 RightSideAction = queue()
 LeftSideAction = queue()
@@ -240,13 +270,13 @@ with mp_pose.Pose(
             error = errorcal(lmList)
 
             for raction in RightSideObj:
-                # print('Right', raction.name, raction.moveStep)
+                #print('Right')
                 if raction.judge(lmList):
                     RightSideAction.add(raction.name)
                     for zeroAction in RightSideObj:
                         zeroAction.moveStep = 0
             for laction in LeftSideObj:
-                # print('left', laction.name, laction.moveStep)
+                #print('left')
                 if laction.judge(lmList):
                     LeftSideAction.add(laction.name)
                     for zeroAction in LeftSideObj:
