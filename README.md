@@ -22,6 +22,10 @@ Parting a action to different poses can achieve the function
 - Lock
 - Muscle Man
 
-
+# demo
+- twirl
+![image](https://github.com/ggjj321/locking-street-dance-action-detect/blob/main/demo/MediaPipe%20Pose%202021-08-14%2012-47-42_Trim.gif)
+- punch
+![image](https://github.com/ggjj321/locking-street-dance-action-detect/blob/main/demo/MediaPipe%20Pose%202021-08-14%2012-45-33_Trim.gif)
 
 
