@@ -28,9 +28,9 @@ def angle_between(v1, v2):
 
 def angleca(vertexA, mid, vertexB):
     vectorA = np.array([vertexA[1] - mid[1],
-                               vertexA[2] - mid[2]])
+                        vertexA[2] - mid[2]])
     vectorB = np.array([vertexB[1] - mid[1],
-                           vertexB[2] - mid[2]])
+                        vertexB[2] - mid[2]])
 
     angle = angle_between(vectorA, vectorB) / np.pi * 180
     return angle
@@ -43,7 +43,7 @@ def errorcal(lmList):
 
     shoulderDistance = np.linalg.norm(leftSide - rightSide)
 
-    return (0.08 * shoulderDistance + 36.4) * 1.35
+    return 0.08 * shoulderDistance + 36.4
     # actually measure linear equation
 
 
@@ -67,7 +67,7 @@ class fundamental():
         if rl == 1:  # left
             pos = lmList[24][1] - 100  # follow the error
             if 0 <= lmList[20][1] - pos <= 100 and \
-                0 <= lmList[20][2] - lmList[24][2] <= 100:
+                    0 <= lmList[20][2] - lmList[24][2] <= 100:
                 return True
         return False
 
@@ -153,8 +153,9 @@ class muscleMan(fundamental):
 
     def handAboveVertical(self, lmList, notuse):
         angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
-        if 85 <= angle <= 95 and aboveJudge(lmList[13 + self.rl][1] -
-                                           lmList[15 + self.rl][1]) and \
+        print(angle, self.rl)
+        if 85 <= angle <= 95 and absJudge(lmList[13 + self.rl][1] -
+                                          lmList[15 + self.rl][1]) and \
                 lmList[13 + self.rl][2] > lmList[15 + self.rl][2]:
             return True
 
@@ -170,23 +171,26 @@ class muscleMan(fundamental):
 class lock(fundamental):
     def __init__(self, rl):
         super().__init__()
-        self.moveList = [self.HandBesideWaist, self.lockPose, self.HandShoulderElbow]
+        self.moveList = [self.HandBesideWaist, self.lockPose]
         self.rl = rl
         self.name = 'lock'
         self.moveStep = 0
 
     def lockPose(self, lmList, notuse):
         angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
-        print(angle)
-        if 140 <= angle <= 160 and absJudge(lmList[15 + self.rl][2] - lmList[13 + self.rl][2]):
-            return True
+        if 140 <= angle <= 150:
+            pos = lmList[19 + self.rl][2] - error * 1.5
+            # print(lmList[13 + self.rl][2], lmList[19 + self.rl][2], error, self.rl)
+            if absJudge(lmList[13 + self.rl][1] - lmList[19 + self.rl][1]) and \
+                    absJudge(lmList[13 + self.rl][2] - pos):
+                return True
         return False
 
     def judge(self, lmList):
         rl = self.rl
         if self.moveList[self.moveStep](lmList, rl):
             self.moveStep += 1
-        if self.moveStep == 3:
+        if self.moveStep == 2:
             return True
         return False
 
@@ -258,7 +262,6 @@ with mp_pose.Pose(
         cv2.rectangle(image, (1000, 50), (1200, 750), (255, 0, 0), 3)
         cv2.rectangle(image, (80, 50), (280, 750), (255, 0, 0), 3)
 
-
         if results.pose_landmarks:
 
             myBody = results.pose_landmarks
@@ -270,13 +273,13 @@ with mp_pose.Pose(
             error = errorcal(lmList)
 
             for raction in RightSideObj:
-                #print('Right')
+                # print('Right')
                 if raction.judge(lmList):
                     RightSideAction.add(raction.name)
                     for zeroAction in RightSideObj:
                         zeroAction.moveStep = 0
             for laction in LeftSideObj:
-                #print('left')
+                # print('left')
                 if laction.judge(lmList):
                     LeftSideAction.add(laction.name)
                     for zeroAction in LeftSideObj:
