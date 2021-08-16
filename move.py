@@ -43,7 +43,7 @@ def errorcal(lmList):
 
     shoulderDistance = np.linalg.norm(leftSide - rightSide)
 
-    return 0.08 * shoulderDistance + 36.4
+    return (0.08 * shoulderDistance + 36.4) * 1.35
     # actually measure linear equation
 
 
@@ -59,15 +59,15 @@ class fundamental():
     def HandBesideWaist(self, lmList, rl):
         # hand beside waist
         if rl == 0:  # right
-            pos = lmList[23][1] + 100  # follow the error
-            if aboveJudge(lmList[19][1] - pos) and aboveJudge(
-                    lmList[19][2] - lmList[23][2]):
+            pos = lmList[23][1]  # follow the error
+            if 0 <= lmList[19][1] - pos <= 100 and \
+                    0 <= lmList[19][2] - lmList[23][2] <= error:
                 return True
 
         if rl == 1:  # left
             pos = lmList[24][1] - 100  # follow the error
             if 0 <= lmList[20][1] - pos <= 100 and \
-                    0 <= lmList[20][2] - lmList[24][2] <= 100:
+                    0 <= lmList[20][2] - lmList[24][2] <= error:
                 return True
         return False
 
@@ -130,7 +130,7 @@ class punch(fundamental):
         if absJudge(lmList[19 + self.rl][2] - pos) and \
                 absJudge(pos - lmList[11 + self.rl][2]):
             angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
-            if 170 <= angle <= 180:
+            if 155 <= angle <= 170:
                 return True
         return False
 
@@ -153,7 +153,7 @@ class muscleMan(fundamental):
 
     def handAboveVertical(self, lmList, notuse):
         angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
-        print(angle, self.rl)
+        #print(angle, self.rl)
         if 85 <= angle <= 95 and absJudge(lmList[13 + self.rl][1] -
                                           lmList[15 + self.rl][1]) and \
                 lmList[13 + self.rl][2] > lmList[15 + self.rl][2]:
