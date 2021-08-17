@@ -153,10 +153,8 @@ class muscleMan(fundamental):
 
     def handAboveVertical(self, lmList, notuse):
         angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
-        #print(angle, self.rl)
-        if 85 <= angle <= 95 and absJudge(lmList[13 + self.rl][1] -
-                                          lmList[15 + self.rl][1]) and \
-                lmList[13 + self.rl][2] > lmList[15 + self.rl][2]:
+        angle2 = angleca(lmList[12 - self.rl], lmList[11 + self.rl], lmList[13 + self.rl])
+        if 85 <= angle <= 95 and 170 <= angle2 <= 180:
             return True
 
     def judge(self, lmList):
@@ -178,12 +176,9 @@ class lock(fundamental):
 
     def lockPose(self, lmList, notuse):
         angle = angleca(lmList[11 + self.rl], lmList[13 + self.rl], lmList[19 + self.rl])
-        if 140 <= angle <= 150:
-            pos = lmList[19 + self.rl][2] - error * 1.5
-            # print(lmList[13 + self.rl][2], lmList[19 + self.rl][2], error, self.rl)
-            if absJudge(lmList[13 + self.rl][1] - lmList[19 + self.rl][1]) and \
-                    absJudge(lmList[13 + self.rl][2] - pos):
-                return True
+        angle2 = angleca(lmList[12 - self.rl], lmList[11 + self.rl], lmList[13 + self.rl])
+        if 170 <= angle <= 180 and 140 <= angle2 <= 155:
+            return True
         return False
 
     def judge(self, lmList):
@@ -273,13 +268,11 @@ with mp_pose.Pose(
             error = errorcal(lmList)
 
             for raction in RightSideObj:
-                # print('Right')
                 if raction.judge(lmList):
                     RightSideAction.add(raction.name)
                     for zeroAction in RightSideObj:
                         zeroAction.moveStep = 0
             for laction in LeftSideObj:
-                # print('left')
                 if laction.judge(lmList):
                     LeftSideAction.add(laction.name)
                     for zeroAction in LeftSideObj:
