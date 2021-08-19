@@ -10,7 +10,7 @@ Using it can detect the poses.
 Parting a action to different poses can achieve the function.  
 Pose detect's cocept is calculating the distance and angle of hand, shoulder , arm...and so.  
 The method can easily define a pose.  
-But it's defect is that the misjudge will occur when other action's process.  
+But it's defect is that the misjudge will occur during other action's process.  
 For example, the highst frequency misjudgement is the Muscle Man's judge.  
 Muscle Man's process need to raise hand.It's easy to achieve lock's angle.  
 So the error need to be a small range.  
