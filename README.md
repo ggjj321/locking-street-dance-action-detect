@@ -19,10 +19,14 @@ If you just want to detect one action , the method can quickly and precisely det
 But you want to detect many actions and has higher fault tolerance,deep learning should be need.  
 
 
-# package and python version
+# install package and python version
+I recommend to use PyCharm , and use the PyCharm's settings to install the packages.
+![image](https://github.com/ggjj321/locking-street-dance-action-detect/blob/main/demo/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%20(39).png)
+## packages
 - opencv
 - mediapipe
 - numpy
+## python version
 - python3.7
 
 # 4 actions
