@@ -3,6 +3,7 @@
 # function
 This repository is an application with mediapipe.  
 It can detect 4 different actions and sort left hand side move and right hand side move.
+idea from <https://www.youtube.com/watch?v=9iEPzbG-xLE&t=1621s>
 
 # Core concept
 Mediapipe provides a trained model with body landmarks.  
