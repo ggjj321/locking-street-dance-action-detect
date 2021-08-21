@@ -32,9 +32,7 @@ But you want to detect many actions and has higher fault tolerance,deep learning
 - Muscle Man
 
 # demo
-- twirl
-![image](https://github.com/ggjj321/locking-street-dance-action-detect/blob/main/demo/MediaPipe%20Pose%202021-08-14%2012-47-42_Trim.gif)
-- punch
-![image](https://github.com/ggjj321/locking-street-dance-action-detect/blob/main/demo/MediaPipe%20Pose%202021-08-14%2012-45-33_Trim.gif)
+
+![image](https://github.com/ggjj321/locking-street-dance-action-detect/blob/main/demo/MediaPipe%20Pose%202021-08-21%2013-14-16_Trim_Trim.gif)
 
 
